@@ -96,21 +96,34 @@ int main(const int argc, const char **argv) {
     glViewport(0, 0, windowWidth, windowHeight);
 
     // Preparing data structures - pixels
-    // float *pixels = getInitializedPixelsArray(windowWidth, windowHeight);
-    // const int pixelsSize = windowWidth * windowHeight * 5;
+    const int pixelsCount = windowWidth * windowHeight;
+    float *pixelsColor = new float[pixelsCount];
+    float *pixelsX = new float[pixelsCount];
+    float *pixelsY = new float[pixelsCount];
+    fillPixelsArray(windowWidth, windowHeight, pixelsX, pixelsY);
 
     unsigned int pixelsVao;
     glGenVertexArrays(1, &pixelsVao);
     glBindVertexArray(pixelsVao);
 
-    unsigned int pixelsVbo;
-    glGenBuffers(1, &pixelsVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, pixelsVbo);
-    glBufferData(GL_ARRAY_BUFFER, pixelsSize * static_cast<int>(sizeof(float)), pixels, GL_STATIC_DRAW);
+    unsigned int pixelsXVbo, pixelsYVbo, pixelsColorVbo;
+    glGenBuffers(1, &pixelsXVbo);
+    glGenBuffers(1, &pixelsYVbo);
+    glGenBuffers(1, &pixelsColorVbo);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
+    glBindBuffer(GL_ARRAY_BUFFER, pixelsXVbo);
+    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsX, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
+
+    glBindBuffer(GL_ARRAY_BUFFER, pixelsYVbo);
+    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsY, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, pixelsColorVbo);
+    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsColor, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(1);
 
     // Particles

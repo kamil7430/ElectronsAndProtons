@@ -3,22 +3,14 @@
 
 #include <random>
 
-inline float* getInitializedPixelsArray(const int windowWidth, const int windowHeight) {
-    constexpr unsigned int parametersPerVertex = 5;
-    auto vertices = new float[windowWidth * windowHeight * parametersPerVertex];
-
+inline void fillPixelsArray(const int windowWidth, const int windowHeight, float *xArray, float *yArray) {
     for (int x = 0; x < windowWidth; x++) {
         for (int y = 0; y < windowHeight; y++) {
-            const unsigned int index = (y * windowWidth + x) * parametersPerVertex;
-            vertices[index] = static_cast<float>(x + 1) / static_cast<float>(windowWidth) * 2 - 1;
-            vertices[index + 1] = static_cast<float>(y + 1) / static_cast<float>(windowHeight) * 2 - 1;
-            // vertices[index + 2] = 1.0f;
-            // vertices[index + 3] = 1.0f;
-            // vertices[index + 4] = 1.0f;
+            const unsigned int index = y * windowWidth + x;
+            xArray[index] = static_cast<float>(x + 1) / static_cast<float>(windowWidth) * 2 - 1;
+            yArray[index] = static_cast<float>(y + 1) / static_cast<float>(windowHeight) * 2 - 1;
         }
     }
-
-    return vertices;
 }
 
 inline float* getInitializedParticlesArray(const int particlesCount) {
