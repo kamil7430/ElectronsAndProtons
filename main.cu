@@ -124,7 +124,7 @@ int main(const int argc, const char **argv) {
     glBindBuffer(GL_ARRAY_BUFFER, pixelsColorVbo);
     glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsColor, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
     // Particles
     // float *particles = getInitializedParticlesArray(particlesCount);
