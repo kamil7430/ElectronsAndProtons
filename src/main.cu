@@ -127,23 +127,27 @@ int main(const int argc, const char **argv) {
     // Main loop
     char windowTitle[128];
     int framesCount = 0;
-    double lastTimestamp = glfwGetTime();
+    double lastFpsCalculationTimestamp = glfwGetTime();
+    double currentTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         framesCount++;
-        const double currentTime = glfwGetTime();
-        if (currentTime - lastTimestamp >= 0.5) {
-            sprintf(windowTitle, "Electrons and Protons (%.1f FPS)", framesCount / (currentTime - lastTimestamp));
+        const double previousTime = currentTime;
+        currentTime = glfwGetTime();
+        if (currentTime - lastFpsCalculationTimestamp >= 0.5) {
+            sprintf(windowTitle, "Electrons and Protons (%.1f FPS)", framesCount / (currentTime - lastFpsCalculationTimestamp));
             framesCount = 0;
-            lastTimestamp = currentTime;
+            lastFpsCalculationTimestamp = currentTime;
             glfwSetWindowTitle(window, windowTitle);
         }
 
         processInput(window);
 
+        const double timeDelta = currentTime - previousTime;
         switch (method) {
             case 'c':
-                doCpuComputations(pixelsCount, pixelsX, pixelsY, pixelsV,
-                    particlesCount, particlesX, particlesY, particlesV_x, particlesV_y);
+                doCpuFieldComputations(pixelsCount, pixelsX, pixelsY, pixelsV,
+                    particlesCount, particlesX, particlesY, particlesV_x, particlesV_y,
+                    timeDelta);
                 break;
             case 'g':
                 // TODO
@@ -182,6 +186,17 @@ int main(const int argc, const char **argv) {
         // glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesV_y, GL_DYNAMIC_DRAW);
         // glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
         // glEnableVertexAttribArray(3);
+
+        switch (method) {
+            case 'c':
+            doCpuMovementComputations(pixelsCount, pixelsX, pixelsY, pixelsV,
+                particlesCount, particlesX, particlesY, particlesV_x, particlesV_y,
+                timeDelta, windowWidth, windowHeight);
+            break;
+            case 'g':
+            // TODO
+            break;
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
