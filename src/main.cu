@@ -81,19 +81,17 @@ int main(const int argc, const char **argv) {
     const int pixelsCount = windowWidth * windowHeight;
     float *pixelsX = new float[pixelsCount];
     float *pixelsY = new float[pixelsCount];
-    float *pixelsE_x = new float[pixelsCount];
-    float *pixelsE_y = new float[pixelsCount];
+    float *pixelsV = new float[pixelsCount];
     fillPixelsArray(windowWidth, windowHeight, pixelsX, pixelsY);
 
     unsigned int pixelsVao;
     glGenVertexArrays(1, &pixelsVao);
     glBindVertexArray(pixelsVao);
 
-    unsigned int pixelsXVbo, pixelsYVbo, pixelsEXVbo, pixelsEYVbo;
+    unsigned int pixelsXVbo, pixelsYVbo, pixelsVVbo;
     glGenBuffers(1, &pixelsXVbo);
     glGenBuffers(1, &pixelsYVbo);
-    glGenBuffers(1, &pixelsEXVbo);
-    glGenBuffers(1, &pixelsEYVbo);
+    glGenBuffers(1, &pixelsVVbo);
 
     glBindBuffer(GL_ARRAY_BUFFER, pixelsXVbo);
     glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsX, GL_STATIC_DRAW);
@@ -144,7 +142,7 @@ int main(const int argc, const char **argv) {
 
         switch (method) {
             case 'c':
-                doCpuComputations(pixelsCount, pixelsX, pixelsY, pixelsE_x, pixelsE_y,
+                doCpuComputations(pixelsCount, pixelsX, pixelsY, pixelsV,
                     particlesCount, particlesX, particlesY, particlesV_x, particlesV_y);
                 break;
             case 'g':
@@ -156,15 +154,10 @@ int main(const int argc, const char **argv) {
         glBindVertexArray(pixelsVao);
         glDrawArrays(GL_POINTS, 0, pixelsCount);
 
-        glBindBuffer(GL_ARRAY_BUFFER, pixelsEXVbo);
-        glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsE_x, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, pixelsVVbo);
+        glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsV, GL_DYNAMIC_DRAW);
         glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
         glEnableVertexAttribArray(2);
-
-        glBindBuffer(GL_ARRAY_BUFFER, pixelsEYVbo);
-        glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsE_y, GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
-        glEnableVertexAttribArray(3);
 
         particlesShader.use();
         glBindVertexArray(particlesVao);
@@ -197,8 +190,7 @@ int main(const int argc, const char **argv) {
     // Clean up
     delete[] pixelsX;
     delete[] pixelsY;
-    delete[] pixelsE_x;
-    delete[] pixelsE_y;
+    delete[] pixelsV;
     delete[] particlesX;
     delete[] particlesY;
     delete[] particlesV_x;
