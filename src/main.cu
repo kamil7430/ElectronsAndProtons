@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include "initializer.h"
-#include "shaders.h"
+#include "shaders/shader.h"
 
 int windowWidth, windowHeight;
 
@@ -78,76 +78,85 @@ int main(const int argc, const char **argv) {
 
     // Preparing data structures - pixels
     const int pixelsCount = windowWidth * windowHeight;
-    float *pixelsColor = new float[pixelsCount];
     float *pixelsX = new float[pixelsCount];
     float *pixelsY = new float[pixelsCount];
+    float *pixelsE_x = new float[pixelsCount];
+    float *pixelsE_y = new float[pixelsCount];
     fillPixelsArray(windowWidth, windowHeight, pixelsX, pixelsY);
 
     unsigned int pixelsVao;
     glGenVertexArrays(1, &pixelsVao);
     glBindVertexArray(pixelsVao);
 
-    unsigned int pixelsXVbo, pixelsYVbo, pixelsColorVbo;
+    unsigned int pixelsXVbo, pixelsYVbo, pixelsEXVbo, pixelsEYVbo;
     glGenBuffers(1, &pixelsXVbo);
     glGenBuffers(1, &pixelsYVbo);
-    glGenBuffers(1, &pixelsColorVbo);
+    glGenBuffers(1, &pixelsEXVbo);
+    glGenBuffers(1, &pixelsEYVbo);
 
     glBindBuffer(GL_ARRAY_BUFFER, pixelsXVbo);
-    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsX, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsX, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, pixelsYVbo);
-    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsY, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsY, GL_STATIC_DRAW);
     glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(1);
 
-    glBindBuffer(GL_ARRAY_BUFFER, pixelsColorVbo);
-    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsColor, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, pixelsEXVbo);
+    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsE_x, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(2);
 
+    glBindBuffer(GL_ARRAY_BUFFER, pixelsEYVbo);
+    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsE_y, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+    glEnableVertexAttribArray(3);
+
     // Particles
-    // float *particles = getInitializedParticlesArray(particlesCount);
-    // const int particlesSize = particlesCount * 2;
+    float *particlesX = new float[particlesCount];
+    float *particlesY = new float[particlesCount];
+    float *particlesV_x = new float[particlesCount];
+    float *particlesV_y = new float[particlesCount];
+    fillParticlesArray(particlesCount, particlesX, particlesY, particlesV_x, particlesV_y);
 
-    const unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-    glCompileShader(vertexShader);
-    int success;
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-        return -1;
-    }
+    unsigned int particlesVao;
+    glGenVertexArrays(1, &particlesVao);
+    glBindVertexArray(particlesVao);
 
-    const unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-        return -1;
-    }
+    unsigned int particlesXVbo, particlesYVbo, particlesV_xVbo, particlesV_yVbo;
+    glGenBuffers(1, &particlesXVbo);
+    glGenBuffers(1, &particlesYVbo);
+    glGenBuffers(1, &particlesV_xVbo);
+    glGenBuffers(1, &particlesV_yVbo);
 
-    const unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-        return -1;
-    }
-    glUseProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glBindBuffer(GL_ARRAY_BUFFER, particlesXVbo);
+    glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesX, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, particlesYVbo);
+    glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesY, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+    glEnableVertexAttribArray(1);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, particlesV_xVbo);
+    // glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesV_x, GL_DYNAMIC_DRAW);
+    // glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+    // glEnableVertexAttribArray(2);
+    //
+    // glBindBuffer(GL_ARRAY_BUFFER, particlesV_yVbo);
+    // glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesV_y, GL_DYNAMIC_DRAW);
+    // glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+    // glEnableVertexAttribArray(3);
+
+    // Shaders
+    Shader pixelsShader("./shaders/vertex/pixels.vert", "./shaders/vertex/pixels.frag");
+    pixelsShader.use();
+
+    Shader particlesShader("./shaders/vertex/particles.vert", "./shaders/vertex/particles.frag");
+    particlesShader.use();
 
     char windowTitle[128];
     int framesCount = 0;

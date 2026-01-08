@@ -63,7 +63,20 @@ endif()
 # APP
 add_executable(ElectronsAndProtons src/main.cu
         src/initializer.h
-        src/shaders.h)
+        src/shaders/shader.h
+        src/shaders/shader.cpp)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+add_custom_command(TARGET ElectronsAndProtons POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/shaders/vertex
+        $<TARGET_FILE_DIR:ElectronsAndProtons>/shaders/vertex
+)
+add_custom_command(TARGET ElectronsAndProtons POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/shaders/fragment
+        $<TARGET_FILE_DIR:ElectronsAndProtons>/shaders/fragment
+)
 
 find_package(OpenGL REQUIRED)
 

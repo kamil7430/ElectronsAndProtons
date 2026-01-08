@@ -13,19 +13,17 @@ inline void fillPixelsArray(const int windowWidth, const int windowHeight, float
     }
 }
 
-inline float* getInitializedParticlesArray(const int particlesCount) {
-    constexpr unsigned int parametersPerVertex = 2;
-    auto vertices = new float[particlesCount * parametersPerVertex];
-
+inline void fillParticlesArray(const int particlesCount, float *xArray, float *yArray, float *V_xArray, float *V_yArray) {
     std::random_device random_device;
     std::mt19937 gen(random_device());
     std::uniform_real_distribution<float> distrib(-1, 1);
 
-    for (int i = 0; i < particlesCount * parametersPerVertex; i++) {
-        vertices[i] = distrib(gen);
+    for (int i = 0; i < particlesCount; i++) {
+        xArray[i] = distrib(gen);
+        yArray[i] = distrib(gen);
+        V_xArray[i] = distrib(gen);
+        V_yArray[i] = distrib(gen);
     }
-
-    return vertices;
 }
 
 #endif //ELECTRONSANDPROTONS_INITIALIZER_H
