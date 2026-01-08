@@ -62,7 +62,8 @@ endif()
 
 # APP
 add_executable(ElectronsAndProtons src/main.cu
-        src/initializer.h)
+        src/initializer.h
+        src/shaders.h)
 
 find_package(OpenGL REQUIRED)
 
