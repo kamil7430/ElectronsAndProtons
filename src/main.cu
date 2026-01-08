@@ -2,6 +2,7 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#include "cpu.h"
 #include "initializer.h"
 #include "shaders/shader.h"
 
@@ -170,6 +171,16 @@ int main(const int argc, const char **argv) {
         }
 
         processInput(window);
+
+        switch (method) {
+            case 'c:
+                doCpuComputations(pixelsCount, pixelsX, pixelsY, pixelsE_x, pixelsE_y,
+                    particlesCount, particlesX, particlesY, particlesV_x, particlesV_y);
+                break;
+            case 'g':
+                // TODO
+                break;
+        }
 
         pixelsShader.use();
         glBindVertexArray(pixelsVao);
