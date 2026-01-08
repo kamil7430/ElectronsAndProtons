@@ -152,12 +152,10 @@ int main(const int argc, const char **argv) {
     // glEnableVertexAttribArray(3);
 
     // Shaders
-    Shader pixelsShader("./shaders/vertex/pixels.vert", "./shaders/vertex/pixels.frag");
-    pixelsShader.use();
+    Shader pixelsShader("./shaders/vertex/pixels.vert", "./shaders/fragment/pixels.frag");
+    Shader particlesShader("./shaders/vertex/particles.vert", "./shaders/fragment/particles.frag");
 
-    Shader particlesShader("./shaders/vertex/particles.vert", "./shaders/vertex/particles.frag");
-    particlesShader.use();
-
+    // Main loop
     char windowTitle[128];
     int framesCount = 0;
     double lastTimestamp = glfwGetTime();
@@ -173,19 +171,29 @@ int main(const int argc, const char **argv) {
 
         processInput(window);
 
-        // glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        // glClear(GL_COLOR_BUFFER_BIT);
-
+        pixelsShader.use();
         glBindVertexArray(pixelsVao);
         glDrawArrays(GL_POINTS, 0, pixelsCount);
+
+        particlesShader.use();
+        glBindVertexArray(particlesVao);
+        glDrawArrays(GL_POINTS, 0, particlesCount);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    // Clean up
+    delete[] pixelsX;
+    delete[] pixelsY;
+    delete[] pixelsE_x;
+    delete[] pixelsE_y;
+    delete[] particlesX;
+    delete[] particlesY;
+    delete[] particlesV_x;
+    delete[] particlesV_y;
+
     glfwTerminate();
-    // delete[] pixels;
-    // delete[] particles;
 
     return 0;
 }
