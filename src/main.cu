@@ -173,7 +173,7 @@ int main(const int argc, const char **argv) {
         processInput(window);
 
         switch (method) {
-            case 'c:
+            case 'c':
                 doCpuComputations(pixelsCount, pixelsX, pixelsY, pixelsE_x, pixelsE_y,
                     particlesCount, particlesX, particlesY, particlesV_x, particlesV_y);
                 break;
