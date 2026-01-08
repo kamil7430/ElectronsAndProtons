@@ -61,8 +61,8 @@ if (UNIX)
 endif()
 
 # APP
-add_executable(ElectronsAndProtons main.cu
-        initializer.h)
+add_executable(ElectronsAndProtons src/main.cu
+        src/initializer.h)
 
 find_package(OpenGL REQUIRED)
 
