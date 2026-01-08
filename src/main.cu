@@ -105,16 +105,6 @@ int main(const int argc, const char **argv) {
     glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(1);
 
-    glBindBuffer(GL_ARRAY_BUFFER, pixelsEXVbo);
-    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsE_x, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(2);
-
-    glBindBuffer(GL_ARRAY_BUFFER, pixelsEYVbo);
-    glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsE_y, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(3);
-
     // Particles
     float *particlesX = new float[particlesCount];
     float *particlesY = new float[particlesCount];
@@ -131,26 +121,6 @@ int main(const int argc, const char **argv) {
     glGenBuffers(1, &particlesYVbo);
     glGenBuffers(1, &particlesV_xVbo);
     glGenBuffers(1, &particlesV_yVbo);
-
-    glBindBuffer(GL_ARRAY_BUFFER, particlesXVbo);
-    glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesX, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, particlesYVbo);
-    glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesY, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(1);
-
-    // glBindBuffer(GL_ARRAY_BUFFER, particlesV_xVbo);
-    // glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesV_x, GL_DYNAMIC_DRAW);
-    // glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
-    // glEnableVertexAttribArray(2);
-    //
-    // glBindBuffer(GL_ARRAY_BUFFER, particlesV_yVbo);
-    // glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesV_y, GL_DYNAMIC_DRAW);
-    // glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
-    // glEnableVertexAttribArray(3);
 
     // Shaders
     Shader pixelsShader("./shaders/vertex/pixels.vert", "./shaders/fragment/pixels.frag");
@@ -186,9 +156,39 @@ int main(const int argc, const char **argv) {
         glBindVertexArray(pixelsVao);
         glDrawArrays(GL_POINTS, 0, pixelsCount);
 
+        glBindBuffer(GL_ARRAY_BUFFER, pixelsEXVbo);
+        glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsE_x, GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+        glEnableVertexAttribArray(2);
+
+        glBindBuffer(GL_ARRAY_BUFFER, pixelsEYVbo);
+        glBufferData(GL_ARRAY_BUFFER, pixelsCount * static_cast<int>(sizeof(float)), pixelsE_y, GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+        glEnableVertexAttribArray(3);
+
         particlesShader.use();
         glBindVertexArray(particlesVao);
         glDrawArrays(GL_POINTS, 0, particlesCount);
+
+        glBindBuffer(GL_ARRAY_BUFFER, particlesXVbo);
+        glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesX, GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, particlesYVbo);
+        glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesY, GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+        glEnableVertexAttribArray(1);
+
+        // glBindBuffer(GL_ARRAY_BUFFER, particlesV_xVbo);
+        // glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesV_x, GL_DYNAMIC_DRAW);
+        // glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+        // glEnableVertexAttribArray(2);
+        //
+        // glBindBuffer(GL_ARRAY_BUFFER, particlesV_yVbo);
+        // glBufferData(GL_ARRAY_BUFFER, particlesCount * static_cast<int>(sizeof(float)), particlesV_y, GL_DYNAMIC_DRAW);
+        // glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(0));
+        // glEnableVertexAttribArray(3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

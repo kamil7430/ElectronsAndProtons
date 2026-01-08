@@ -8,6 +8,13 @@ layout (location = 3) in float aPixelE_y;
 out vec3 aColor;
 
 void main() {
-    aColor = vec3(1.0f, 0.0f, 0.0f);
+    float potential = aPixelE_x + aPixelE_y;
+
+    if (potential > 0) {
+        aColor = vec3(1.0f, 1.0f, 1.0f - potential);
+    } else {
+        aColor = vec3(1.0f - potential, 1.0f, 1.0f);
+    }
+
     gl_Position = vec4(aPixelX, aPixelY, 0.0f, 1.0f);
 }
