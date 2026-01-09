@@ -2,8 +2,8 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
-#include "cpu/cpu_main.h"
-#include "gpu/gpu_main.cuh"
+#include "cpu_main.h"
+#include "gpu_main.cuh"
 
 void usage(const char *errorMessage, const char *programName) {
     std::cerr << "Error: " << errorMessage << std::endl;

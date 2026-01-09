@@ -3,7 +3,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "../common.h"
+#include "common.h"
 
 inline void gpuMain(const int windowSize, const int particlesCount, GLFWwindow *window) {
 

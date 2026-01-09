@@ -67,11 +67,11 @@ add_executable(ElectronsAndProtons src/main.cu
         src/shaders/shader.cpp
         src/cpu/cpu_computations.h
         src/shaders/file_helper.h
-        src/cpu/cpu_main.h
-        src/gpu/gpu_main.cuh
+        src/cpu_main.h
+        src/gpu_main.cuh
         src/common.h
-        src/cpu/cpu_main.cpp
-        src/gpu/gpu_main.cu
+        src/cpu_main.cpp
+        src/gpu_main.cu
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
