@@ -6,8 +6,6 @@
 
 #include "common.h"
 
-constexpr int GRID_SIZE = 100;
-
 typedef struct {
     float x;
     float y;

@@ -1,6 +1,8 @@
 #ifndef ELECTRONSANDPROTONS_COMMON_H
 #define ELECTRONSANDPROTONS_COMMON_H
 
+constexpr int GRID_SIZE = 100;
+
 inline bool shouldSimulationStop = false;
 
 inline void processInput(GLFWwindow *window) {

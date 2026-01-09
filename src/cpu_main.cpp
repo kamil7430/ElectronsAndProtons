@@ -4,11 +4,21 @@
 #include <random>
 
 inline float cpuIndexToFloat(const int index, const int windowSize) {
-    return static_cast<float>(index + 1) / static_cast<float>(windowSize) * 2 - 1;
+    const float fl = static_cast<float>(index + 1) / static_cast<float>(windowSize) * 2 - 1;
+    if (fl < -1.0f)
+        return -1.0f;
+    if (fl > 1.0f)
+        return 1.0f;
+    return fl;
 }
 
 inline int cpuFloatToIndex(const float fl, const int windowSize) {
-    return static_cast<int>((fl + 1) / 2 * windowSize);
+    const int ind = static_cast<int>((fl + 1) / 2 * windowSize);
+    if (ind < 0)
+        return 0;
+    if (ind >= windowSize)
+        return windowSize - 1;
+    return ind;
 }
 
 void cpuFillPixelStructsArray(const int windowSize, CpuPixel *pixels) {
@@ -26,7 +36,7 @@ inline int cpuGetGridIndex(const int row, const int col, const int gridCountInOn
 }
 
 inline int cpuGetGridIndex(const float x, const float y, const int windowSize, const int gridCountInOneDimension) {
-    return cpuGetGridIndex(cpuFloatToIndex(x, windowSize), cpuFloatToIndex(y, windowSize), gridCountInOneDimension);
+    return cpuGetGridIndex(cpuFloatToIndex(x, windowSize) / GRID_SIZE, cpuFloatToIndex(y, windowSize) / GRID_SIZE, gridCountInOneDimension);
 }
 
 void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particles, const int windowSize, const int gridCountInOneDimension) {
