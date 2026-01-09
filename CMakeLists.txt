@@ -65,7 +65,6 @@ add_executable(ElectronsAndProtons src/main.cu
         src/initializer.h
         src/shaders/shader.h
         src/shaders/shader.cpp
-        src/cpu/cpu_computations.h
         src/shaders/file_helper.h
         src/cpu_main.h
         src/gpu_main.cuh
