@@ -1,5 +1,5 @@
-#ifndef ELECTRONSANDPROTONS_CPU_H
-#define ELECTRONSANDPROTONS_CPU_H
+#ifndef ELECTRONSANDPROTONS_CPU_COMPUTATIONS_H
+#define ELECTRONSANDPROTONS_CPU_COMPUTATIONS_H
 
 inline void doCpuFieldComputations(const int pixelsCount, const float *pixelsX, const float *pixelsY, float *pixelsV,
     const int particlesCount, float *particlesX, float *particlesY, float *particlesV_x, float *particlesV_y,
@@ -30,7 +30,7 @@ inline void doCpuFieldComputations(const int pixelsCount, const float *pixelsX, 
 
 inline void doCpuMovementComputations(const int pixelsCount, const float *pixelsX, const float *pixelsY, float *pixelsV,
     const int particlesCount, float *particlesX, float *particlesY, float *particlesV_x, float *particlesV_y,
-    const double timeDelta, const int windowWidth, const int windowHeight) {
+    const float timeDelta, const int windowWidth, const int windowHeight) {
     for (int par = 0; par < particlesCount; par++) {
         float x = particlesX[par];
         float y = particlesY[par];
@@ -64,21 +64,9 @@ inline void doCpuMovementComputations(const int pixelsCount, const float *pixels
         // Calculate new velocity
         v_x += particleCharge * E_x * timeDelta;
         v_x *= 0.90f;
-        // if (v_x > 1.0f) {
-        //     v_x = 1.0f;
-        // }
-        // if (v_x < -1.0f) {
-        //     v_x = -1.0f;
-        // }
 
         v_y += particleCharge * E_y * timeDelta;
         v_y *= 0.90f;
-        // if (v_y > 1.0f) {
-        //     v_y = 1.0f;
-        // }
-        // if (v_y < -1.0f) {
-        //     v_y = -1.0f;
-        // }
 
         // Update positions and handle window frame bounces
         x += v_x * timeDelta;
@@ -101,4 +89,4 @@ inline void doCpuMovementComputations(const int pixelsCount, const float *pixels
     }
 }
 
-#endif //ELECTRONSANDPROTONS_CPU_H
+#endif //ELECTRONSANDPROTONS_CPU_COMPUTATIONS_H

@@ -65,8 +65,12 @@ add_executable(ElectronsAndProtons src/main.cu
         src/initializer.h
         src/shaders/shader.h
         src/shaders/shader.cpp
-        src/cpu.h
-        src/shaders/file_helper.h)
+        src/cpu/cpu_computations.h
+        src/shaders/file_helper.h
+        src/cpu/cpu_main.h
+        src/gpu/gpu_main.cuh
+        src/common.h
+)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 add_custom_command(TARGET ElectronsAndProtons POST_BUILD
