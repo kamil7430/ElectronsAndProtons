@@ -33,6 +33,7 @@ void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particle
 void cpuSortByGridIndex(CpuParticle *particles, const int particlesCount);
 void cpuFindGridStartIndices(int *gridStartIndices, const int gridSize, const CpuParticle *particles, const int particlesCount);
 void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension);
+void cpuComputeParticlesMovement(int *gridStartIndices, const int gridSize, CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension, const float timeDelta);
 
 inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *window) {
     // Preparing data structures - pixels
@@ -112,20 +113,10 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
         glEnableVertexAttribArray(0);
         glDrawArrays(GL_POINTS, 0, particlesCount);
 
-        // const double timeDelta = currentTime - previousTime;
+        const float timeDelta = static_cast<float>(currentTime - previousTime);
 
-        // if (!shouldSimulationStop) {
-        //     switch (method) {
-        //         case 'c':
-        //             doCpuMovementComputations(pixelsCount, pixelsX, pixelsY, pixelsV,
-        //                 particlesCount, particlesX, particlesY, particlesV_x, particlesV_y,
-        //                 static_cast<float>(timeDelta), windowWidth, windowHeight);
-        //             break;
-        //         case 'g':
-        //             // TODO
-        //             break;
-        //     }
-        // }
+        if (!shouldSimulationStop)
+            cpuComputeParticlesMovement(gridStartIndices, gridSize, particles, particlesCount, windowSize, gridCountInOneDimension, timeDelta);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

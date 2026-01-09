@@ -78,9 +78,8 @@ void cpuFindGridStartIndices(int *gridStartIndices, const int gridSize, const Cp
     }
 }
 
-void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension) {
-    constexpr float k = 1e-2;
-
+void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount,
+    const CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension) {
     for (int pix = 0; pix < pixelsCount; pix++) {
         const float x = pixels[pix].x;
         const float y = pixels[pix].y;
@@ -89,6 +88,8 @@ void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pi
 
         float V = 0;
         for (int par = 0; par < particlesCount; par++) {
+            constexpr float k = 1e-2;
+
             const float vecX = particles[par].x - x;
             const float vecY = particles[par].y - y;
 
@@ -98,5 +99,36 @@ void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pi
         }
 
         pixels[pix].v = V;
+    }
+}
+
+void cpuComputeParticlesMovement(int *gridStartIndices, const int gridSize, CpuParticle *particles,
+    const int particlesCount, const int windowSize, const int gridCountInOneDimension, const float timeDelta) {
+    // TODO
+
+    for (int par = 0; par < particlesCount; par++) {
+        float x = particles[par].x;
+        float y = particles[par].y;
+        float v_x = particles[par].v_x;
+        float v_y = particles[par].v_y;
+
+        // Update positions and handle window frame bounces
+        x += v_x * timeDelta;
+        if (x < -1.0f || x > 1.0f) {
+            v_x *= -1;
+            x += v_x * timeDelta;
+        }
+
+        y += v_y * timeDelta;
+        if (y < -1.0f || y > 1.0f) {
+            v_y *= -1;
+            y += v_y * timeDelta;
+        }
+
+        // Save new values
+        particles[par].x = x;
+        particles[par].y = y;
+        particles[par].v_x = v_x;
+        particles[par].v_y = v_y;
     }
 }
