@@ -121,8 +121,8 @@ int main(const int argc, const char **argv) {
     glGenBuffers(1, &particlesV_yVbo);
 
     // Shaders
-    Shader pixelsShader("./shaders/vertex/pixels.vert", "./shaders/fragment/pixels.frag");
-    Shader particlesShader("./shaders/vertex/particles.vert", "./shaders/fragment/particles.frag");
+    const Shader pixelsShader("shaders/vertex/pixels.vert", "shaders/fragment/pixels.frag");
+    const Shader particlesShader("shaders/vertex/particles.vert", "shaders/fragment/particles.frag");
 
     // Main loop
     char windowTitle[128];

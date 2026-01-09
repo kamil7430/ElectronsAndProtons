@@ -5,6 +5,8 @@
 #include <sstream>
 #include <glad/gl.h>
 
+#include "file_helper.h"
+
 Shader::Shader(const char *vertexShaderFilePath, const char *fragmentShaderFilePath) {
     std::ifstream vertexShaderFile, fragmentShaderFile;
     std::string vertexCode, fragmentCode;
@@ -13,8 +15,8 @@ Shader::Shader(const char *vertexShaderFilePath, const char *fragmentShaderFileP
     fragmentShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
-        vertexShaderFile.open(vertexShaderFilePath);
-        fragmentShaderFile.open(fragmentShaderFilePath);
+        vertexShaderFile.open(getExecutableDirectory() / vertexShaderFilePath);
+        fragmentShaderFile.open(getExecutableDirectory() / fragmentShaderFilePath);
 
         std::stringstream vertexShaderStream, fragmentShaderStream;
         vertexShaderStream << vertexShaderFile.rdbuf();
