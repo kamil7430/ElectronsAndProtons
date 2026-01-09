@@ -70,6 +70,8 @@ add_executable(ElectronsAndProtons src/main.cu
         src/cpu/cpu_main.h
         src/gpu/gpu_main.cuh
         src/common.h
+        src/cpu/cpu_main.cpp
+        src/gpu/gpu_main.cu
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)

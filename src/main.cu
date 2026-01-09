@@ -2,47 +2,40 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
-#include "initializer.h"
 #include "cpu/cpu_main.h"
 #include "gpu/gpu_main.cuh"
 
 void usage(const char *errorMessage, const char *programName) {
     std::cerr << "Error: " << errorMessage << std::endl;
-    std::cerr << "Usage: " << programName << " width height method particles" << std::endl;
+    std::cerr << "Usage: " << programName << " size method particles" << std::endl;
 }
 
 int main(const int argc, const char **argv) {
     // Arguments parsing
-    if (argc != 5) {
+    if (argc != 4) {
         usage("Invalid argument count!", argv[0]);
         return -1;
     }
 
-    const int windowWidth = atoi(argv[1]);
-    if (windowWidth <= 0 || windowWidth > 2000) {
-        usage("Invalid width value (expected 0-2000)!", argv[0]);
-        return -1;
-    }
-
-    const int windowHeight = atoi(argv[2]);
-    if (windowHeight <= 0 || windowHeight > 2000) {
-        usage("Invalid height value (expected 0-2000)!", argv[0]);
+    const int windowSize = atoi(argv[1]);
+    if (windowSize <= 0 || windowSize > 2000 || windowSize % GRID_SIZE != 0) {
+        usage("Invalid window size value (expected 0-2000 and divisible by 100)!", argv[0]);
         return -1;
     }
 
     char method;
-    if (strcmp(argv[3], "cpu") == 0)
+    if (strcmp(argv[2], "cpu") == 0)
         method = 'c';
-    else if (strcmp(argv[3], "gpu") == 0)
+    else if (strcmp(argv[2], "gpu") == 0)
         method = 'g';
     else {
         usage(R"(Invalid method (expected 'cpu' or 'gpu')!)", argv[0]);
         return -1;
     }
 
-    const int particlesCount = atoi(argv[4]);
-    if (particlesCount <= 0 || particlesCount >= windowWidth * windowHeight) {
-        usage("Particles count should be in range (0, width * height)!", argv[0]);
+    const int particlesCount = atoi(argv[3]);
+    if (particlesCount <= 0 || particlesCount >= windowSize * windowSize) {
+        usage("Particles count should be in range (0, size * size)!", argv[0]);
         return -1;
     }
 
@@ -54,7 +47,7 @@ int main(const int argc, const char **argv) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, "Electrons and Protons", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(windowSize, windowSize, "Electrons and Protons", nullptr, nullptr);
     if (window == nullptr) {
         std::cerr << "Failed to create GLFW window!" << std::endl;
         glfwTerminate();
@@ -68,14 +61,14 @@ int main(const int argc, const char **argv) {
         return -1;
     }
 
-    glViewport(0, 0, windowWidth, windowHeight);
+    glViewport(0, 0, windowSize, windowSize);
 
     switch (method) {
         case 'c':
-            cpuMain(windowWidth, windowHeight, particlesCount, window);
+            cpuMain(windowSize, particlesCount, window);
             break;
         case 'g':
-            gpuMain(windowWidth, windowHeight, particlesCount, window);
+            gpuMain(windowSize, particlesCount, window);
             break;
         default:
             std::cerr << "Invalid method!" << std::endl;

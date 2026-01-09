@@ -3,9 +3,9 @@
 
 #include <GLFW/glfw3.h>
 
-#include "common.h"
+#include "../common.h"
 
-inline void gpuMain(const int windowWidth, const int windowHeight, const int particlesCount, GLFWwindow *window) {
+inline void gpuMain(const int windowSize, const int particlesCount, GLFWwindow *window) {
 
 }
 
