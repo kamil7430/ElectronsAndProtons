@@ -18,7 +18,7 @@ int main(const int argc, const char **argv) {
     }
 
     const int windowSize = atoi(argv[1]);
-    if (windowSize <= 0 || windowSize > 2000 || windowSize % GRID_SIZE != 0) {
+    if (windowSize <= 0 || windowSize > 2000 || windowSize % GRID_SIZE_IN_PIXELS != 0) {
         usage("Invalid window size value (expected 0-2000 and divisible by 100)!", argv[0]);
         return -1;
     }

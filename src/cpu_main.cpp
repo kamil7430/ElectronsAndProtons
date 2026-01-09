@@ -36,7 +36,7 @@ inline int cpuGetGridIndex(const int row, const int col, const int gridCountInOn
 }
 
 inline int cpuGetGridIndex(const float x, const float y, const int windowSize, const int gridCountInOneDimension) {
-    return cpuGetGridIndex(cpuFloatToIndex(x, windowSize) / GRID_SIZE, cpuFloatToIndex(y, windowSize) / GRID_SIZE, gridCountInOneDimension);
+    return cpuGetGridIndex(cpuFloatToIndex(x, windowSize) / GRID_SIZE_IN_PIXELS, cpuFloatToIndex(y, windowSize) / GRID_SIZE_IN_PIXELS, gridCountInOneDimension);
 }
 
 void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particles, const int windowSize, const int gridCountInOneDimension) {
@@ -49,6 +49,7 @@ void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particle
         particles[i].y = distrib(gen);
         particles[i].v_x = distrib(gen);
         particles[i].v_y = distrib(gen);
+        particles[i].q = distrib(gen) < 0 ? -1 : 1;
         particles[i].gridIndex = cpuGetGridIndex(particles[i].x, particles[i].y, windowSize, gridCountInOneDimension);
     }
 }
@@ -58,4 +59,44 @@ void cpuSortByGridIndex(CpuParticle *particles, const int particlesCount) {
         return a.gridIndex < b.gridIndex;
     };
     std::sort(particles, particles + particlesCount, comparer);
+}
+
+void cpuFindGridStartIndices(int *gridStartIndices, const int gridSize, const CpuParticle *particles, const int particlesCount) {
+    for (int i = 0; i < gridSize; i++)
+        gridStartIndices[i] = -1;
+
+    int g = particles[0].gridIndex;
+    gridStartIndices[g] = 0;
+
+    for (int i = 1; i < particlesCount; i++) {
+        if (particles[i - 1].gridIndex == particles[i].gridIndex)
+            continue;
+
+        g += particles[i].gridIndex - particles[i - 1].gridIndex;
+        assert(g < gridSize);
+        gridStartIndices[g] = i;
+    }
+}
+
+void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension) {
+    constexpr float k = 1e-2;
+
+    for (int pix = 0; pix < pixelsCount; pix++) {
+        const float x = pixels[pix].x;
+        const float y = pixels[pix].y;
+
+        const int gridIndex = cpuGetGridIndex(x, y, windowSize, gridCountInOneDimension);
+
+        float V = 0;
+        for (int par = 0; par < particlesCount; par++) {
+            const float vecX = particles[par].x - x;
+            const float vecY = particles[par].y - y;
+
+            const float r = sqrt(vecX * vecX + vecY * vecY);
+
+            V += k * particles[par].q / r;
+        }
+
+        pixels[pix].v = V;
+    }
 }

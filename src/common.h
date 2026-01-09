@@ -1,7 +1,7 @@
 #ifndef ELECTRONSANDPROTONS_COMMON_H
 #define ELECTRONSANDPROTONS_COMMON_H
 
-constexpr int GRID_SIZE = 100;
+constexpr int GRID_SIZE_IN_PIXELS = 100;
 
 inline bool shouldSimulationStop = false;
 
