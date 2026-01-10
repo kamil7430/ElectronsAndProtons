@@ -4,6 +4,8 @@
 #include <cmath>
 #include <random>
 
+constexpr float k = 1e-3;
+
 inline float cpuIndexToFloat(const int index, const int windowSize) {
     const float fl = static_cast<float>(index + 1) / static_cast<float>(windowSize) * 2 - 1;
     if (fl < -1.0f)
@@ -136,8 +138,6 @@ void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPix
             }
 
             for (int par = startIndex; par < stopIndex; par++) {
-                constexpr float k = 1e-3;
-
                 const float vecX = particles[par].x - x;
                 const float vecY = particles[par].y - y;
 
@@ -164,8 +164,58 @@ void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize
         float y = particles[par].y;
         float v_x = particles[par].v_x;
         float v_y = particles[par].v_y;
+        int q = particles[par].q;
 
-        // Update positions and handle window frame bounces
+        // Calculate electrostatic force within grid neighbourhood
+        float F_x = 0.0f;
+        float F_y = 0.0f;
+
+        auto calculate = [&](const int gridInd) {
+            const int startIndex = gridStartIndices[gridInd];
+            if (startIndex < 0)
+                return;
+
+            int stopIndex;
+            if (gridInd + 1 >= gridSize) {
+                stopIndex = particlesCount;
+            } else {
+                int i = gridInd + 1;
+                do {
+                    stopIndex = gridStartIndices[i];
+                    i++;
+                } while (stopIndex < 0 && i < gridSize);
+                if (stopIndex < 0) {
+                    stopIndex = particlesCount;
+                }
+            }
+
+            for (int p = startIndex; p < stopIndex; p++) {
+                if (p == par)
+                    continue;
+
+                const float vecX = particles[p].x - x;
+                const float vecY = particles[p].y - y;
+
+                const float rSquared = vecX * vecX + vecY * vecY;
+                const float r = std::sqrt(rSquared);
+
+                const int sense = q == particles[p].q ? -1 : 1;
+                F_x += vecX * k * sense / (r * rSquared);
+                F_y += vecY * k * sense / (r * rSquared);
+            }
+        };
+
+        const int gridIndex = particles[par].gridIndex;
+        cpuDoGridWork(gridIndex, gridSize, gridCountInOneDimension, calculate);
+
+        // Update velocity (m = 1)
+        v_x += F_x * timeDelta;
+        v_x *= 0.90f;
+
+        v_y += F_y * timeDelta;
+        v_y *= 0.90f;
+
+        // Update position and handle window frame bounces
         x += v_x * timeDelta;
         if (x < -1.0f || x > 1.0f) {
             v_x *= -1;
