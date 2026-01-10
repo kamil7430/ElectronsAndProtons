@@ -55,7 +55,7 @@ void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particle
 }
 
 void cpuSortByGridIndex(CpuParticle *particles, const int particlesCount) {
-    static auto comparer = [](const CpuParticle &a, const CpuParticle &b) {
+    static auto comparer = [&](const CpuParticle &a, const CpuParticle &b) {
         return a.gridIndex < b.gridIndex;
     };
     std::sort(particles, particles + particlesCount, comparer);
