@@ -125,9 +125,9 @@ void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPix
             if (gridInd + 1 >= gridSize) {
                 stopIndex = particlesCount;
             } else {
-                int i = 1;
+                int i = gridInd + 1;
                 do {
-                    stopIndex = gridStartIndices[gridInd + i];
+                    stopIndex = gridStartIndices[i];
                     i++;
                 } while (stopIndex < 0 && i < gridSize);
                 if (stopIndex < 0) {
@@ -183,5 +183,6 @@ void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize
         particles[par].y = y;
         particles[par].v_x = v_x;
         particles[par].v_y = v_y;
+        particles[par].gridIndex = cpuGetGridIndex(x, y, windowSize, gridCountInOneDimension);
     }
 }
