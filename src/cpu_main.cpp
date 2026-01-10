@@ -4,7 +4,7 @@
 #include <cmath>
 #include <random>
 
-constexpr float k = 1e-3;
+static constexpr float k = 1e-3;
 
 inline float cpuIndexToFloat(const int index, const int windowSize) {
     const float fl = static_cast<float>(index + 1) / static_cast<float>(windowSize) * 2 - 1;
