@@ -1,7 +1,7 @@
 #ifndef ELECTRONSANDPROTONS_CPU_MAIN_H
 #define ELECTRONSANDPROTONS_CPU_MAIN_H
 
-#include <assert.h>
+#include <cassert>
 #include <cstdio>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -79,6 +79,7 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
     double lastFpsCalculationTimestamp = glfwGetTime();
     double currentTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
+        // FPS calculation
         framesCount++;
         const double previousTime = currentTime;
         currentTime = glfwGetTime();
@@ -91,10 +92,12 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
 
         processInput(window);
 
+        // Potential calculation
         cpuSortByGridIndex(particles, particlesCount);
         cpuFindGridStartIndices(gridStartIndices, gridSize, particles, particlesCount);
         cpuComputePotential(gridStartIndices, gridSize, pixels, pixelsCount, particles, particlesCount, windowSize, gridCountInOneDimension);
 
+        // Binding OpenGL buffers
         pixelsShader.use();
         glBindVertexArray(pixelsVao);
         glBindBuffer(GL_ARRAY_BUFFER, pixelsVbo);
@@ -113,10 +116,10 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
         glEnableVertexAttribArray(0);
         glDrawArrays(GL_POINTS, 0, particlesCount);
 
-        const float timeDelta = static_cast<float>(currentTime - previousTime);
-
+        // Particles movement calculation
         if (!shouldSimulationStop)
-            cpuComputeParticlesMovement(gridStartIndices, gridSize, particles, particlesCount, windowSize, gridCountInOneDimension, timeDelta);
+            cpuComputeParticlesMovement(gridStartIndices, gridSize, particles, particlesCount, windowSize,
+                gridCountInOneDimension, static_cast<float>(currentTime - previousTime));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
