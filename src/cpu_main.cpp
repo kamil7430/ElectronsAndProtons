@@ -1,6 +1,7 @@
 #include "cpu_main.h"
 
 #include <algorithm>
+#include <cmath>
 #include <random>
 
 inline float cpuIndexToFloat(const int index, const int windowSize) {
@@ -84,18 +85,61 @@ void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pi
         const float x = pixels[pix].x;
         const float y = pixels[pix].y;
 
+        float V = 0;
+
+        auto calculate = [&](const int gridInd) {
+            const int startIndex = gridStartIndices[gridInd];
+            if (startIndex < 0)
+                return;
+
+            int stopIndex;
+            int i = 1;
+            do {
+                stopIndex = gridStartIndices[gridInd + i];
+                i++;
+            } while (stopIndex < 0 && i < gridSize);
+            if (stopIndex < 0) {
+                stopIndex = particlesCount;
+            }
+
+            for (int par = startIndex; par < stopIndex; par++) {
+                constexpr float k = 1e-3;
+
+                const float vecX = particles[par].x - x;
+                const float vecY = particles[par].y - y;
+
+                const float r = std::sqrt(vecX * vecX + vecY * vecY);
+
+                V += k * particles[par].q / r;
+            }
+        };
+
         const int gridIndex = cpuGetGridIndex(x, y, windowSize, gridCountInOneDimension);
 
-        float V = 0;
-        for (int par = 0; par < particlesCount; par++) {
-            constexpr float k = 1e-2;
-
-            const float vecX = particles[par].x - x;
-            const float vecY = particles[par].y - y;
-
-            const float r = sqrt(vecX * vecX + vecY * vecY);
-
-            V += k * particles[par].q / r;
+        if (const int lowerLeft = gridIndex - gridCountInOneDimension - 1; lowerLeft >= 0 && gridIndex % gridCountInOneDimension != 0) {
+            calculate(lowerLeft);
+        }
+        if (const int lower = gridIndex - gridCountInOneDimension; lower >= 0) {
+            calculate(lower);
+        }
+        if (const int lowerRight = gridIndex - gridCountInOneDimension + 1; lowerRight >= 0 && (gridIndex + 1) % gridCountInOneDimension != 0) {
+            calculate(lowerRight);
+        }
+        if (const int left = gridIndex - 1; left >= 0 && gridIndex % gridCountInOneDimension != 0) {
+            calculate(left);
+        }
+        calculate(gridIndex); // Pixel's grid
+        if (const int right = gridIndex + 1; right < gridSize && (gridIndex + 1) % gridCountInOneDimension != 0) {
+            calculate(right);
+        }
+        if (const int UpperLeft = gridIndex + gridCountInOneDimension - 1; UpperLeft < gridSize && gridIndex % gridCountInOneDimension != 0) {
+            calculate(UpperLeft);
+        }
+        if (const int upper = gridIndex + gridCountInOneDimension; upper < gridSize) {
+            calculate(upper);
+        }
+        if (const int upperRight = gridIndex + gridCountInOneDimension + 1; upperRight < gridSize && (gridIndex + 1) % gridCountInOneDimension != 0) {
+            calculate(upperRight);
         }
 
         pixels[pix].v = V;
