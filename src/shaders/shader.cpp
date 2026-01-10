@@ -45,9 +45,8 @@ Shader::Shader(const char *vertexShaderFilePath, const char *fragmentShaderFileP
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
     if (!success) {
         char infoLog[1024];
-        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        sprintf(infoLog, "Vertex shader compilation error:\n%s", infoLog);
-        throw std::runtime_error(infoLog);
+        glGetShaderInfoLog(vertexShader, 1024, nullptr, infoLog);
+        throw std::runtime_error(std::string("Vertex shader compilation error:\n").append(infoLog));
     }
 
     const unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -56,9 +55,8 @@ Shader::Shader(const char *vertexShaderFilePath, const char *fragmentShaderFileP
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success) {
         char infoLog[1024];
-        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        sprintf(infoLog, "Fragment shader compilation error:\n%s", infoLog);
-        throw std::runtime_error(infoLog);
+        glGetShaderInfoLog(fragmentShader, 1024, nullptr, infoLog);
+        throw std::runtime_error(std::string("Fragment shader compilation error:\n").append(infoLog));
     }
 
     shaderProgramId = glCreateProgram();
@@ -68,9 +66,8 @@ Shader::Shader(const char *vertexShaderFilePath, const char *fragmentShaderFileP
     glGetProgramiv(shaderProgramId, GL_LINK_STATUS, &success);
     if (!success) {
         char infoLog[1024];
-        glGetProgramInfoLog(shaderProgramId, 512, nullptr, infoLog);
-        sprintf(infoLog, "Shader program linking error:\n%s", infoLog);
-        throw std::runtime_error(infoLog);
+        glGetProgramInfoLog(shaderProgramId, 1024, nullptr, infoLog);
+        throw std::runtime_error(std::string("Shader program linking error:\n").append(infoLog));
     }
 
     glDeleteShader(vertexShader);
