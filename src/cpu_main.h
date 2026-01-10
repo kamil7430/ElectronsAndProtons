@@ -69,7 +69,7 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
     unsigned int particlesVbo;
     glGenBuffers(1, &particlesVbo);
 
-    // OpenGL stuff - Shaders
+    // OpenGL stuff - shaders
     const Shader pixelsShader("shaders/vertex/cpu/pixels.vert", "shaders/fragment/pixels.frag");
     const Shader particlesShader("shaders/vertex/cpu/particles.vert", "shaders/fragment/particles.frag");
 
