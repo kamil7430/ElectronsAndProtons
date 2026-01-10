@@ -79,7 +79,36 @@ void cpuFindGridStartIndices(int *gridStartIndices, const int gridSize, const Cp
     }
 }
 
-void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount,
+template <typename lambda>
+void cpuDoGridWork(const int gridIndex, const int gridSize, const int gridCountInOneDimension, lambda calculate) {
+    if (const int lowerLeft = gridIndex - gridCountInOneDimension - 1; lowerLeft >= 0 && gridIndex % gridCountInOneDimension != 0) {
+        calculate(lowerLeft);
+    }
+    if (const int lower = gridIndex - gridCountInOneDimension; lower >= 0) {
+        calculate(lower);
+    }
+    if (const int lowerRight = gridIndex - gridCountInOneDimension + 1; lowerRight >= 0 && (gridIndex + 1) % gridCountInOneDimension != 0) {
+        calculate(lowerRight);
+    }
+    if (const int left = gridIndex - 1; left >= 0 && gridIndex % gridCountInOneDimension != 0) {
+        calculate(left);
+    }
+    calculate(gridIndex); // Center grid
+    if (const int right = gridIndex + 1; right < gridSize && (gridIndex + 1) % gridCountInOneDimension != 0) {
+        calculate(right);
+    }
+    if (const int UpperLeft = gridIndex + gridCountInOneDimension - 1; UpperLeft < gridSize && gridIndex % gridCountInOneDimension != 0) {
+        calculate(UpperLeft);
+    }
+    if (const int upper = gridIndex + gridCountInOneDimension; upper < gridSize) {
+        calculate(upper);
+    }
+    if (const int upperRight = gridIndex + gridCountInOneDimension + 1; upperRight < gridSize && (gridIndex + 1) % gridCountInOneDimension != 0) {
+        calculate(upperRight);
+    }
+}
+
+void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount,
     const CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension) {
     for (int pix = 0; pix < pixelsCount; pix++) {
         const float x = pixels[pix].x;
@@ -93,13 +122,17 @@ void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pi
                 return;
 
             int stopIndex;
-            int i = 1;
-            do {
-                stopIndex = gridStartIndices[gridInd + i];
-                i++;
-            } while (stopIndex < 0 && i < gridSize);
-            if (stopIndex < 0) {
+            if (gridInd + 1 >= gridSize) {
                 stopIndex = particlesCount;
+            } else {
+                int i = 1;
+                do {
+                    stopIndex = gridStartIndices[gridInd + i];
+                    i++;
+                } while (stopIndex < 0 && i < gridSize);
+                if (stopIndex < 0) {
+                    stopIndex = particlesCount;
+                }
             }
 
             for (int par = startIndex; par < stopIndex; par++) {
@@ -116,37 +149,13 @@ void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pi
 
         const int gridIndex = cpuGetGridIndex(x, y, windowSize, gridCountInOneDimension);
 
-        if (const int lowerLeft = gridIndex - gridCountInOneDimension - 1; lowerLeft >= 0 && gridIndex % gridCountInOneDimension != 0) {
-            calculate(lowerLeft);
-        }
-        if (const int lower = gridIndex - gridCountInOneDimension; lower >= 0) {
-            calculate(lower);
-        }
-        if (const int lowerRight = gridIndex - gridCountInOneDimension + 1; lowerRight >= 0 && (gridIndex + 1) % gridCountInOneDimension != 0) {
-            calculate(lowerRight);
-        }
-        if (const int left = gridIndex - 1; left >= 0 && gridIndex % gridCountInOneDimension != 0) {
-            calculate(left);
-        }
-        calculate(gridIndex); // Pixel's grid
-        if (const int right = gridIndex + 1; right < gridSize && (gridIndex + 1) % gridCountInOneDimension != 0) {
-            calculate(right);
-        }
-        if (const int UpperLeft = gridIndex + gridCountInOneDimension - 1; UpperLeft < gridSize && gridIndex % gridCountInOneDimension != 0) {
-            calculate(UpperLeft);
-        }
-        if (const int upper = gridIndex + gridCountInOneDimension; upper < gridSize) {
-            calculate(upper);
-        }
-        if (const int upperRight = gridIndex + gridCountInOneDimension + 1; upperRight < gridSize && (gridIndex + 1) % gridCountInOneDimension != 0) {
-            calculate(upperRight);
-        }
+        cpuDoGridWork(gridIndex, gridSize, gridCountInOneDimension, calculate);
 
         pixels[pix].v = V;
     }
 }
 
-void cpuComputeParticlesMovement(int *gridStartIndices, const int gridSize, CpuParticle *particles,
+void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize, CpuParticle *particles,
     const int particlesCount, const int windowSize, const int gridCountInOneDimension, const float timeDelta) {
     // TODO
 

@@ -32,8 +32,8 @@ inline int cpuGetGridIndex(const float x, const float y, const int windowSize, c
 void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particles, const int windowSize, const int gridCountInOneDimension);
 void cpuSortByGridIndex(CpuParticle *particles, const int particlesCount);
 void cpuFindGridStartIndices(int *gridStartIndices, const int gridSize, const CpuParticle *particles, const int particlesCount);
-void cpuComputePotential(int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension);
-void cpuComputeParticlesMovement(int *gridStartIndices, const int gridSize, CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension, const float timeDelta);
+void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension);
+void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize, CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension, const float timeDelta);
 
 inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *window) {
     // Preparing data structures - pixels
