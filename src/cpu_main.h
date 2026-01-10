@@ -90,12 +90,12 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
             glfwSetWindowTitle(window, windowTitle);
         }
 
-        processInput(window);
-
         // Potential calculation
-        cpuSortByGridIndex(particles, particlesCount);
-        cpuFindGridStartIndices(gridStartIndices, gridSize, particles, particlesCount);
-        cpuComputePotential(gridStartIndices, gridSize, pixels, pixelsCount, particles, particlesCount, windowSize, gridCountInOneDimension);
+        if (!shouldSimulationStop) {
+            cpuSortByGridIndex(particles, particlesCount);
+            cpuFindGridStartIndices(gridStartIndices, gridSize, particles, particlesCount);
+            cpuComputePotential(gridStartIndices, gridSize, pixels, pixelsCount, particles, particlesCount, windowSize, gridCountInOneDimension);
+        }
 
         // Binding OpenGL buffers
         pixelsShader.use();
@@ -115,6 +115,8 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(CpuParticle), reinterpret_cast<void*>(0));
         glEnableVertexAttribArray(0);
         glDrawArrays(GL_POINTS, 0, particlesCount);
+
+        processInput(window);
 
         // Particles movement calculation
         if (!shouldSimulationStop)
