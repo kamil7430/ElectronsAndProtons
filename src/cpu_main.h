@@ -35,7 +35,7 @@ void cpuFillStaticSourcesArray(std::vector<CpuParticle> &staticSources, const in
 void cpuSortByGridIndex(CpuParticle *particles, const int particlesCount);
 void cpuFindGridStartIndices(int *gridStartIndices, const int gridSize, const CpuParticle *particles, const int particlesCount);
 void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles, const int particlesCount, const std::vector<CpuParticle> &staticSources, const int windowSize, const int gridCountInOneDimension);
-void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize, CpuParticle *particles, const int particlesCount, const std::vector<CpuParticle>& staticSources, const int windowSize, const int gridCountInOneDimension, const float timeDelta);
+void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize, CpuParticle *particles, const int particlesCount, const std::vector<CpuParticle> &staticSources, const int windowSize, const int gridCountInOneDimension, const float timeDelta);
 
 inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *window) {
     // Preparing data structures - pixels

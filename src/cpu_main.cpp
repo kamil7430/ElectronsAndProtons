@@ -128,7 +128,7 @@ void cpuDoGridWork(const int gridIndex, const int gridSize, const int gridCountI
 }
 
 void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles,
-    const int particlesCount, const std::vector<CpuParticle>& staticSources, const int windowSize, const int gridCountInOneDimension) {
+    const int particlesCount, const std::vector<CpuParticle> &staticSources, const int windowSize, const int gridCountInOneDimension) {
     for (int pix = 0; pix < pixelsCount; pix++) {
         const float x = pixels[pix].x;
         const float y = pixels[pix].y;
@@ -182,7 +182,7 @@ void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPix
 }
 
 void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize, CpuParticle *particles, const int particlesCount,
-    const std::vector<CpuParticle>& staticSources, const int windowSize, const int gridCountInOneDimension, const float timeDelta) {
+    const std::vector<CpuParticle> &staticSources, const int windowSize, const int gridCountInOneDimension, const float timeDelta) {
     for (int par = 0; par < particlesCount; par++) {
         float x = particles[par].x;
         float y = particles[par].y;
