@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstdio>
+#include <vector>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
@@ -30,10 +31,11 @@ void cpuFillPixelStructsArray(const int windowSize, CpuPixel *pixels);
 inline int cpuGetGridIndex(const int row, const int col, const int gridCountInOneDimension);
 inline int cpuGetGridIndex(const float x, const float y, const int windowSize, const int gridCountInOneDimension);
 void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particles, const int windowSize, const int gridCountInOneDimension);
+void cpuFillStaticSourcesArray(std::vector<CpuParticle> &staticSources, const int windowSize, const int gridCountInOneDimension);
 void cpuSortByGridIndex(CpuParticle *particles, const int particlesCount);
 void cpuFindGridStartIndices(int *gridStartIndices, const int gridSize, const CpuParticle *particles, const int particlesCount);
-void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension);
-void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize, CpuParticle *particles, const int particlesCount, const int windowSize, const int gridCountInOneDimension, const float timeDelta);
+void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles, const int particlesCount, const std::vector<CpuParticle> &staticSources, const int windowSize, const int gridCountInOneDimension);
+void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize, CpuParticle *particles, const int particlesCount, const std::vector<CpuParticle>& staticSources, const int windowSize, const int gridCountInOneDimension, const float timeDelta);
 
 inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *window) {
     // Preparing data structures - pixels
@@ -49,6 +51,11 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
     // Particles
     CpuParticle *particles = new CpuParticle[particlesCount];
     cpuFillParticleStructsArray(particlesCount, particles, windowSize, gridCountInOneDimension);
+
+    // Static electrostatic field sources
+    const int staticSourcesCount = gridCountInOneDimension;
+    std::vector<CpuParticle> staticSources(staticSourcesCount);
+    cpuFillStaticSourcesArray(staticSources, windowSize, gridCountInOneDimension);
 
     // Grid indices array
     int *gridStartIndices = new int[gridSize];
@@ -94,7 +101,8 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
         if (!shouldSimulationStop) {
             cpuSortByGridIndex(particles, particlesCount);
             cpuFindGridStartIndices(gridStartIndices, gridSize, particles, particlesCount);
-            cpuComputePotential(gridStartIndices, gridSize, pixels, pixelsCount, particles, particlesCount, windowSize, gridCountInOneDimension);
+            cpuComputePotential(gridStartIndices, gridSize, pixels, pixelsCount, particles, particlesCount,
+                staticSources, windowSize, gridCountInOneDimension);
         }
 
         // Binding OpenGL buffers
@@ -120,8 +128,8 @@ inline void cpuMain(const int windowSize, const int particlesCount, GLFWwindow *
 
         // Particles movement calculation
         if (!shouldSimulationStop)
-            cpuComputeParticlesMovement(gridStartIndices, gridSize, particles, particlesCount, windowSize,
-                gridCountInOneDimension, static_cast<float>(currentTime - previousTime));
+            cpuComputeParticlesMovement(gridStartIndices, gridSize, particles, particlesCount, staticSources,
+                windowSize, gridCountInOneDimension, static_cast<float>(currentTime - previousTime));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
