@@ -1,4 +1,4 @@
-#version 460 core
+#version 410 core
 
 layout (location = 0) in float aParticleX;
 layout (location = 1) in float aParticleY;
