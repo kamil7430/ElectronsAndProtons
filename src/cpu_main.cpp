@@ -6,40 +6,14 @@
 
 static constexpr float k = 1e-3;
 
-inline float cpuIndexToFloat(const int index, const int windowSize) {
-    const float fl = static_cast<float>(index + 1) / static_cast<float>(windowSize) * 2 - 1;
-    if (fl < -1.0f)
-        return -1.0f;
-    if (fl > 1.0f)
-        return 1.0f;
-    return fl;
-}
-
-inline int cpuFloatToIndex(const float fl, const int windowSize) {
-    const int ind = static_cast<int>((fl + 1) / 2 * windowSize);
-    if (ind < 0)
-        return 0;
-    if (ind >= windowSize)
-        return windowSize - 1;
-    return ind;
-}
-
 void cpuFillPixelStructsArray(const int windowSize, CpuPixel *pixels) {
     for (int x = 0; x < windowSize; x++) {
         for (int y = 0; y < windowSize; y++) {
             const unsigned int index = y * windowSize + x;
-            pixels[index].x = cpuIndexToFloat(x, windowSize);
-            pixels[index].y = cpuIndexToFloat(y, windowSize);
+            pixels[index].x = indexToFloat(x, windowSize);
+            pixels[index].y = indexToFloat(y, windowSize);
         }
     }
-}
-
-inline int cpuGetGridIndex(const int row, const int col, const int gridCountInOneDimension) {
-    return row * gridCountInOneDimension + col;
-}
-
-inline int cpuGetGridIndex(const float x, const float y, const int windowSize, const int gridCountInOneDimension) {
-    return cpuGetGridIndex(cpuFloatToIndex(x, windowSize) / GRID_SIZE_IN_PIXELS, cpuFloatToIndex(y, windowSize) / GRID_SIZE_IN_PIXELS, gridCountInOneDimension);
 }
 
 void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particles, const int windowSize, const int gridCountInOneDimension) {
@@ -53,7 +27,7 @@ void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particle
         particles[i].v_x = distrib(gen);
         particles[i].v_y = distrib(gen);
         particles[i].q = distrib(gen) < 0 ? -1 : 1;
-        particles[i].gridIndex = cpuGetGridIndex(particles[i].x, particles[i].y, windowSize, gridCountInOneDimension);
+        particles[i].gridIndex = getGridIndex(particles[i].x, particles[i].y, windowSize, gridCountInOneDimension);
     }
 }
 
@@ -67,10 +41,10 @@ void cpuFillStaticSourcesArray(std::vector<CpuParticle> &staticSources, const in
     for (CpuParticle &source : staticSources) {
         source.x = distrib(gen);
         source.y = distrib(gen);
-        source.v_x = distrib(gen);
-        source.v_y = distrib(gen);
+        // source.v_x = 0.0f;
+        // source.v_y = 0.0f;
         source.q = std::round(distrib(gen) * chargeScale);
-        source.gridIndex = cpuGetGridIndex(source.x, source.y, windowSize, gridCountInOneDimension);
+        // source.gridIndex = getGridIndex(source.x, source.y, windowSize, gridCountInOneDimension);
     }
 }
 
@@ -164,7 +138,7 @@ void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPix
             }
         };
 
-        const int gridIndex = cpuGetGridIndex(x, y, windowSize, gridCountInOneDimension);
+        const int gridIndex = getGridIndex(x, y, windowSize, gridCountInOneDimension);
 
         cpuDoGridWork(gridIndex, gridSize, gridCountInOneDimension, calculate);
 
@@ -270,6 +244,6 @@ void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize
         particles[par].y = y;
         particles[par].v_x = v_x;
         particles[par].v_y = v_y;
-        particles[par].gridIndex = cpuGetGridIndex(x, y, windowSize, gridCountInOneDimension);
+        particles[par].gridIndex = getGridIndex(x, y, windowSize, gridCountInOneDimension);
     }
 }

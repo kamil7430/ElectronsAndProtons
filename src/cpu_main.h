@@ -25,11 +25,7 @@ typedef struct {
     int gridIndex;
 } CpuParticle;
 
-inline float cpuIndexToFloat(const int index, const int windowSize);
-inline int cpuFloatToIndex(const float fl, const int windowSize);
 void cpuFillPixelStructsArray(const int windowSize, CpuPixel *pixels);
-inline int cpuGetGridIndex(const int row, const int col, const int gridCountInOneDimension);
-inline int cpuGetGridIndex(const float x, const float y, const int windowSize, const int gridCountInOneDimension);
 void cpuFillParticleStructsArray(const int particlesCount, CpuParticle *particles, const int windowSize, const int gridCountInOneDimension);
 void cpuFillStaticSourcesArray(std::vector<CpuParticle> &staticSources, const int windowSize, const int gridCountInOneDimension);
 void cpuSortByGridIndex(CpuParticle *particles, const int particlesCount);
