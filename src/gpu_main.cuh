@@ -3,9 +3,9 @@
 
 #include <cassert>
 #include <cstdio>
-#include <cuda_gl_interop.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <cuda_gl_interop.h>
 #include <thrust/device_vector.h>
 
 #include "common.h"
@@ -15,19 +15,21 @@ __host__ void gpuFillPixelsArray(const int windowSize, float *xArray, float *yAr
 __host__ void gpuFillParticlesArray(const int particlesCount, float *particlesX, float *particlesY, float *particlesV_x, float *particlesV_y, int *particlesQ, int *particlesGridIndex, const int windowSize, const int gridCountInOneDimension);
 __host__ void gpuFillStaticSourcesArray(std::vector<float> &staticSourcesX, std::vector<float> &staticSourcesY, std::vector<int> &staticSourcesQ, const int windowSize, const int gridCountInOneDimension);
 __host__ void gpuSortByGridIndex(thrust::device_ptr<float> device_particlesX, thrust::device_ptr<float> device_particlesY, thrust::device_vector<float> &device_particlesV_x, thrust::device_vector<float> &device_particlesV_y, thrust::device_vector<int> &device_particlesQ, thrust::device_vector<int> &device_particlesGridIndex, const int particlesCount);
-__host__ void kernelFindGridStartIndicesAndComputePotential(int *gridStartIndices, const int gridSize, float *pixelsX, float *pixelsY, float *pixelsV, const int pixelsCount, float *particlesX, float *particlesY, float *particlesV_x, float *particlesV_y, int *particlesQ, int *particlesGridIndex, const int particlesCount, float *device_staticSourcesX, float *device_staticSourcesY, int *device_staticSourcesQ, const int staticSourcesCount, const int windowSize, const int gridCountInOneDimension);
+__global__ void kernelFindGridStartIndicesAndComputePotential(int *gridStartIndices, const int gridSize, float *pixelsX, float *pixelsY, float *pixelsV, const int pixelsCount, float *particlesX, float *particlesY, float *particlesV_x, float *particlesV_y, int *particlesQ, int *particlesGridIndex, const int particlesCount, float *device_staticSourcesX, float *device_staticSourcesY, int *device_staticSourcesQ, const int staticSourcesCount, const int windowSize, const int gridCountInOneDimension);
 
 template <typename T>
 thrust::device_ptr<T> gpuGetPointer(cudaGraphicsResource *resource) {
     cudaGraphicsMapResources(1, &resource, 0);
     T* raw_ptr;
     size_t num_bytes;
-    cudaGraphicsResourceGetMappedPointer(&raw_ptr, &num_bytes, resource);
+    cudaGraphicsResourceGetMappedPointer(reinterpret_cast<void**>(&raw_ptr), &num_bytes, resource);
     thrust::device_ptr<T> thrust_ptr(raw_ptr);
     return thrust_ptr;
 }
 
 inline void gpuMain(const int windowSize, const int particlesCount, GLFWwindow *window) {
+    cudaSetDevice(0);
+
     // Preparing data structures - pixels
     const int pixelsCount = windowSize * windowSize;
     float *pixelsX = new float[pixelsCount];
@@ -144,6 +146,11 @@ inline void gpuMain(const int windowSize, const int particlesCount, GLFWwindow *
     int framesCount = 0;
     double lastFpsCalculationTimestamp = glfwGetTime();
     double currentTime = glfwGetTime();
+
+    constexpr int blockSize = 256;
+    const int blocksForPixels = pixelsCount / blockSize + 1;
+    const int blocksForParticles = particlesCount / blockSize + 1;
+
     while (!glfwWindowShouldClose(window)) {
         // FPS calculation
         framesCount++;
@@ -161,7 +168,7 @@ inline void gpuMain(const int windowSize, const int particlesCount, GLFWwindow *
             gpuSortByGridIndex(device_particlesX, device_particlesY, device_particlesV_x, device_particlesV_y,
                 device_particlesQ, device_particlesGridIndex, particlesCount);
             thrust::fill(device_gridStartIndices.begin(), device_gridStartIndices.end(), -1);
-            kernelFindGridStartIndicesAndComputePotential(thrust::raw_pointer_cast(device_gridStartIndices.data()), gridSize,
+            kernelFindGridStartIndicesAndComputePotential<<<blocksForPixels, blockSize>>>(thrust::raw_pointer_cast(device_gridStartIndices.data()), gridSize,
                 thrust::raw_pointer_cast(device_pixelsX), thrust::raw_pointer_cast(device_pixelsY), thrust::raw_pointer_cast(device_pixelsV),
                 pixelsCount, thrust::raw_pointer_cast(device_particlesX), thrust::raw_pointer_cast(device_particlesY),
                 thrust::raw_pointer_cast(device_particlesV_x.data()), thrust::raw_pointer_cast(device_particlesV_y.data()),
@@ -185,6 +192,8 @@ inline void gpuMain(const int windowSize, const int particlesCount, GLFWwindow *
         particlesShader.use();
         glBindVertexArray(particlesVao);
         glDrawArrays(GL_POINTS, 0, particlesCount);
+
+        processInput(window);
 
         // Get device pointers of data managed by OpenGL
         glFinish();

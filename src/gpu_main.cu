@@ -3,6 +3,8 @@
 #include <random>
 #include <thrust/sort.h>
 
+static constexpr float k = 1e-3;
+
 __host__ void gpuFillPixelsArray(const int windowSize, float *xArray, float *yArray) {
     for (int x = 0; x < windowSize; x++) {
         for (int y = 0; y < windowSize; y++) {
@@ -53,11 +55,39 @@ __host__ void gpuSortByGridIndex(thrust::device_ptr<float> device_particlesX, th
     thrust::sort_by_key(device_particlesGridIndex.begin(), device_particlesGridIndex.end(), values_begin);
 }
 
-void kernelFindGridStartIndicesAndComputePotential(int *gridStartIndices, const int gridSize, float *pixelsX,
+__global__ void kernelFindGridStartIndicesAndComputePotential(int *gridStartIndices, const int gridSize, float *pixelsX,
     float *pixelsY, float *pixelsV, const int pixelsCount, float *particlesX, float *particlesY, float *particlesV_x,
     float *particlesV_y, int *particlesQ, int *particlesGridIndex, const int particlesCount,
     float *device_staticSourcesX, float *device_staticSourcesY, int *device_staticSourcesQ,
     const int staticSourcesCount, const int windowSize, const int gridCountInOneDimension) {
-    // Try to find grid start index
+    const unsigned int threadNumber = blockDim.x * blockIdx.x + threadIdx.x;
+    if (threadNumber >= pixelsCount)
+        return;
 
+    // Try to find grid start index (array is filled with -1)
+    if (threadNumber == 0) {
+        gridStartIndices[particlesGridIndex[0]] = 0;
+    } else if (threadNumber < particlesCount) {
+        if (particlesGridIndex[threadNumber - 1] != particlesGridIndex[threadNumber]) {
+            gridStartIndices[particlesGridIndex[threadNumber]] = threadNumber;
+        }
+    }
+    __syncthreads();
+
+    // Calculate potential - naive version
+    const float x = pixelsX[threadNumber];
+    const float y = pixelsY[threadNumber];
+
+    float V = 0;
+
+    for (int i = 0; i < staticSourcesCount; i++) {
+        const float vecX = device_staticSourcesX[i] - x;
+        const float vecY = device_staticSourcesY[i] - y;
+
+        const float r = sqrtf(vecX * vecX + vecY * vecY);
+
+        V += k * device_staticSourcesQ[i] / r;
+    }
+
+    pixelsV[threadNumber] = V;
 }
