@@ -16,6 +16,7 @@ __host__ void gpuFillParticlesArray(const int particlesCount, float *particlesX,
 __host__ void gpuFillStaticSourcesArray(std::vector<float> &staticSourcesX, std::vector<float> &staticSourcesY, std::vector<int> &staticSourcesQ, const int windowSize, const int gridCountInOneDimension);
 __host__ void gpuSortByGridIndex(thrust::device_ptr<float> device_particlesX, thrust::device_ptr<float> device_particlesY, thrust::device_vector<float> &device_particlesV_x, thrust::device_vector<float> &device_particlesV_y, thrust::device_vector<int> &device_particlesQ, thrust::device_vector<int> &device_particlesGridIndex, const int particlesCount);
 __global__ void kernelFindGridStartIndicesAndComputePotential(int *gridStartIndices, const int gridSize, float *pixelsX, float *pixelsY, float *pixelsV, const int pixelsCount, float *particlesX, float *particlesY, float *particlesV_x, float *particlesV_y, int *particlesQ, int *particlesGridIndex, const int particlesCount, float *device_staticSourcesX, float *device_staticSourcesY, int *device_staticSourcesQ, const int staticSourcesCount, const int windowSize, const int gridCountInOneDimension);
+__global__ void kernelComputeParticlesMovement(int *gridStartIndices, const int gridSize, float *pixelsX, float *pixelsY, float *pixelsV, const int pixelsCount, float *particlesX, float *particlesY, float *particlesV_x, float *particlesV_y, int *particlesQ, int *particlesGridIndex, const int particlesCount, float *device_staticSourcesX, float *device_staticSourcesY, int *device_staticSourcesQ, const int staticSourcesCount, const int windowSize, const int gridCountInOneDimension, const float timeDelta);
 
 template <typename T>
 thrust::device_ptr<T> gpuGetPointer(cudaGraphicsResource *resource) {
@@ -203,9 +204,16 @@ inline void gpuMain(const int windowSize, const int particlesCount, GLFWwindow *
         device_particlesX = gpuGetPointer<float>(particlesXVboResource);
         device_particlesY = gpuGetPointer<float>(particlesYVboResource);
 
-        // // Particles movement calculation
-        // if (!shouldSimulationStop)
-        //     cpuComputeParticlesMovement(
+        // Particles movement calculation
+        if (!shouldSimulationStop)
+            kernelComputeParticlesMovement<<<blocksForParticles, blockSize>>>(thrust::raw_pointer_cast(device_gridStartIndices.data()), gridSize,
+                thrust::raw_pointer_cast(device_pixelsX), thrust::raw_pointer_cast(device_pixelsY), thrust::raw_pointer_cast(device_pixelsV),
+                pixelsCount, thrust::raw_pointer_cast(device_particlesX), thrust::raw_pointer_cast(device_particlesY),
+                thrust::raw_pointer_cast(device_particlesV_x.data()), thrust::raw_pointer_cast(device_particlesV_y.data()),
+                thrust::raw_pointer_cast(device_particlesQ.data()), thrust::raw_pointer_cast(device_particlesGridIndex.data()),
+                particlesCount, thrust::raw_pointer_cast(device_staticSourcesX.data()),
+                thrust::raw_pointer_cast(device_staticSourcesY.data()), thrust::raw_pointer_cast(device_staticSourcesQ.data()),
+                staticSourcesCount, windowSize, gridCountInOneDimension, static_cast<float>(currentTime - previousTime));
 
         glfwSwapBuffers(window);
         glfwPollEvents();

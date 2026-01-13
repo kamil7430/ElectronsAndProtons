@@ -4,6 +4,8 @@
 #include <cmath>
 #include <random>
 
+#include "cuda_common.cuh"
+
 static constexpr float k = 1e-3;
 
 void cpuFillPixelStructsArray(const int windowSize, CpuPixel *pixels) {
@@ -72,35 +74,6 @@ void cpuFindGridStartIndices(int *gridStartIndices, const int gridSize, const Cp
     }
 }
 
-template <typename lambda>
-void cpuDoGridWork(const int gridIndex, const int gridSize, const int gridCountInOneDimension, lambda calculate) {
-    if (const int lowerLeft = gridIndex - gridCountInOneDimension - 1; lowerLeft >= 0 && gridIndex % gridCountInOneDimension != 0) {
-        calculate(lowerLeft);
-    }
-    if (const int lower = gridIndex - gridCountInOneDimension; lower >= 0) {
-        calculate(lower);
-    }
-    if (const int lowerRight = gridIndex - gridCountInOneDimension + 1; lowerRight >= 0 && (gridIndex + 1) % gridCountInOneDimension != 0) {
-        calculate(lowerRight);
-    }
-    if (const int left = gridIndex - 1; left >= 0 && gridIndex % gridCountInOneDimension != 0) {
-        calculate(left);
-    }
-    calculate(gridIndex); // Center grid
-    if (const int right = gridIndex + 1; right < gridSize && (gridIndex + 1) % gridCountInOneDimension != 0) {
-        calculate(right);
-    }
-    if (const int UpperLeft = gridIndex + gridCountInOneDimension - 1; UpperLeft < gridSize && gridIndex % gridCountInOneDimension != 0) {
-        calculate(UpperLeft);
-    }
-    if (const int upper = gridIndex + gridCountInOneDimension; upper < gridSize) {
-        calculate(upper);
-    }
-    if (const int upperRight = gridIndex + gridCountInOneDimension + 1; upperRight < gridSize && (gridIndex + 1) % gridCountInOneDimension != 0) {
-        calculate(upperRight);
-    }
-}
-
 void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPixel *pixels, const int pixelsCount, const CpuParticle *particles,
     const int particlesCount, const std::vector<CpuParticle> &staticSources, const int windowSize, const int gridCountInOneDimension) {
     for (int pix = 0; pix < pixelsCount; pix++) {
@@ -140,7 +113,7 @@ void cpuComputePotential(const int *gridStartIndices, const int gridSize, CpuPix
 
         const int gridIndex = getGridIndex(x, y, windowSize, gridCountInOneDimension);
 
-        cpuDoGridWork(gridIndex, gridSize, gridCountInOneDimension, calculate);
+        doGridWork(gridIndex, gridSize, gridCountInOneDimension, calculate);
 
         for (auto &source : staticSources) {
             const float vecX = source.x - x;
@@ -204,7 +177,7 @@ void cpuComputeParticlesMovement(const int *gridStartIndices, const int gridSize
         };
 
         const int gridIndex = particles[par].gridIndex;
-        cpuDoGridWork(gridIndex, gridSize, gridCountInOneDimension, calculate);
+        doGridWork(gridIndex, gridSize, gridCountInOneDimension, calculate);
 
         // Static sources
         for (auto &source : staticSources) {

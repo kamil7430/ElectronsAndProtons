@@ -4,6 +4,7 @@ project(ElectronsAndProtons LANGUAGES CUDA C CXX)
 set(CMAKE_CUDA_STANDARD 20)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_ARCHITECTURES native)
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -73,6 +74,7 @@ add_executable(ElectronsAndProtons src/main.cu
         src/common.h
         src/cpu_main.cpp
         src/gpu_main.cu
+        src/cuda_common.cuh
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)

@@ -3,6 +3,8 @@
 #include <random>
 #include <thrust/sort.h>
 
+#include "cuda_common.cuh"
+
 static constexpr float k = 1e-3;
 
 __host__ void gpuFillPixelsArray(const int windowSize, float *xArray, float *yArray) {
@@ -74,11 +76,44 @@ __global__ void kernelFindGridStartIndicesAndComputePotential(int *gridStartIndi
     }
     __syncthreads();
 
-    // Calculate potential - naive version
+    // Calculate potential
     const float x = pixelsX[threadNumber];
     const float y = pixelsY[threadNumber];
 
     float V = 0;
+
+    auto calculate = [&] __device__ (const int gridInd) {
+        const int startIndex = gridStartIndices[gridInd];
+        if (startIndex < 0)
+            return;
+
+        int stopIndex;
+        if (gridInd + 1 >= gridSize) {
+            stopIndex = particlesCount;
+        } else {
+            int i = gridInd + 1;
+            do {
+                stopIndex = gridStartIndices[i];
+                i++;
+            } while (stopIndex < 0 && i < gridSize);
+            if (stopIndex < 0) {
+                stopIndex = particlesCount;
+            }
+        }
+
+        for (int par = startIndex; par < stopIndex; par++) {
+            const float vecX = particlesX[par] - x;
+            const float vecY = particlesY[par] - y;
+
+            const float r = sqrtf(vecX * vecX + vecY * vecY);
+
+            V += k * particlesQ[par] / r;
+        }
+    };
+
+    const int gridIndex = getGridIndex(x, y, windowSize, gridCountInOneDimension);
+
+    doGridWork(gridIndex, gridSize, gridCountInOneDimension, calculate);
 
     for (int i = 0; i < staticSourcesCount; i++) {
         const float vecX = device_staticSourcesX[i] - x;
@@ -90,4 +125,102 @@ __global__ void kernelFindGridStartIndicesAndComputePotential(int *gridStartIndi
     }
 
     pixelsV[threadNumber] = V;
+}
+
+__global__ void kernelComputeParticlesMovement(int *gridStartIndices, const int gridSize, float *pixelsX, float *pixelsY,
+    float *pixelsV, const int pixelsCount, float *particlesX, float *particlesY, float *particlesV_x,
+    float *particlesV_y, int *particlesQ, int *particlesGridIndex, const int particlesCount,
+    float *device_staticSourcesX, float *device_staticSourcesY, int *device_staticSourcesQ,
+    const int staticSourcesCount, const int windowSize, const int gridCountInOneDimension, const float timeDelta) {
+    const unsigned int threadNumber = blockDim.x * blockIdx.x + threadIdx.x;
+    if (threadNumber >= particlesCount)
+        return;
+
+    float x = particlesX[threadNumber];
+    float y = particlesY[threadNumber];
+    float v_x = particlesV_x[threadNumber];
+    float v_y = particlesV_y[threadNumber];
+    int q = particlesQ[threadNumber];
+
+    // Calculate electrostatic force within grid neighbourhood
+    float F_x = 0.0f;
+    float F_y = 0.0f;
+
+    auto calculate = [&] __device__ (const int gridInd) {
+        const int startIndex = gridStartIndices[gridInd];
+        if (startIndex < 0)
+            return;
+
+        int stopIndex;
+        if (gridInd + 1 >= gridSize) {
+            stopIndex = particlesCount;
+        } else {
+            int i = gridInd + 1;
+            do {
+                stopIndex = gridStartIndices[i];
+                i++;
+            } while (stopIndex < 0 && i < gridSize);
+            if (stopIndex < 0) {
+                stopIndex = particlesCount;
+            }
+        }
+
+        for (int p = startIndex; p < stopIndex; p++) {
+            if (p == threadNumber)
+                continue;
+
+            const float vecX = particlesX[p] - x;
+            const float vecY = particlesY[p] - y;
+
+            const float rSquared = vecX * vecX + vecY * vecY;
+            const float r = sqrtf(rSquared);
+
+            const int sense = q == particlesQ[p] ? -1 : 1;
+            F_x += vecX * k * sense / (r * rSquared);
+            F_y += vecY * k * sense / (r * rSquared);
+        }
+    };
+
+    const int gridIndex = particlesGridIndex[threadNumber];
+    doGridWork(gridIndex, gridSize, gridCountInOneDimension, calculate);
+
+    // Static sources
+    for (int i = 0; i < staticSourcesCount; i++) {
+        const float vecX = device_staticSourcesX[i] - x;
+        const float vecY = device_staticSourcesY[i] - y;
+
+        const float rSquared = vecX * vecX + vecY * vecY;
+        const float r = sqrtf(rSquared);
+
+        const int sense = -q * device_staticSourcesQ[i];
+        F_x += vecX * k * sense / (r * rSquared);
+        F_y += vecY * k * sense / (r * rSquared);
+    }
+
+    // Update velocity (m = 1)
+    v_x += F_x * timeDelta;
+    v_x *= 0.90f;
+
+    v_y += F_y * timeDelta;
+    v_y *= 0.90f;
+
+    // Update position and handle window frame bounces
+    x += v_x * timeDelta;
+    if (x < -1.0f || x > 1.0f) {
+        v_x *= -1;
+        x += v_x * timeDelta;
+    }
+
+    y += v_y * timeDelta;
+    if (y < -1.0f || y > 1.0f) {
+        v_y *= -1;
+        y += v_y * timeDelta;
+    }
+
+    // Save new values
+    particlesX[threadNumber] = x;
+    particlesY[threadNumber] = y;
+    particlesV_x[threadNumber] = v_x;
+    particlesV_y[threadNumber] = v_y;
+    particlesGridIndex[threadNumber] = getGridIndex(x, y, windowSize, gridCountInOneDimension);
 }
