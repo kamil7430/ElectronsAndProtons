@@ -57,7 +57,20 @@ __host__ void gpuSortByGridIndex(thrust::device_ptr<float> device_particlesX, th
     thrust::sort_by_key(device_particlesGridIndex.begin(), device_particlesGridIndex.end(), values_begin);
 }
 
-__global__ void kernelFindGridStartIndicesAndComputePotential(int *gridStartIndices, const int gridSize, float *pixelsX,
+__global__ void kernelFindGridStartIndices(int *gridStartIndices, int *particlesGridIndex, const int particlesCount) {
+    const unsigned int threadNumber = blockDim.x * blockIdx.x + threadIdx.x;
+    if (threadNumber >= particlesCount)
+        return;
+
+    // Try to find grid start index (array is filled with -1)
+    if (threadNumber == 0) {
+        gridStartIndices[particlesGridIndex[0]] = 0;
+    } else if (particlesGridIndex[threadNumber - 1] != particlesGridIndex[threadNumber]) {
+        gridStartIndices[particlesGridIndex[threadNumber]] = threadNumber;
+    }
+}
+
+__global__ void kernelComputePotential(int *gridStartIndices, const int gridSize, float *pixelsX,
     float *pixelsY, float *pixelsV, const int pixelsCount, float *particlesX, float *particlesY, float *particlesV_x,
     float *particlesV_y, int *particlesQ, int *particlesGridIndex, const int particlesCount,
     float *device_staticSourcesX, float *device_staticSourcesY, int *device_staticSourcesQ,
@@ -65,16 +78,6 @@ __global__ void kernelFindGridStartIndicesAndComputePotential(int *gridStartIndi
     const unsigned int threadNumber = blockDim.x * blockIdx.x + threadIdx.x;
     if (threadNumber >= pixelsCount)
         return;
-
-    // Try to find grid start index (array is filled with -1)
-    if (threadNumber == 0) {
-        gridStartIndices[particlesGridIndex[0]] = 0;
-    } else if (threadNumber < particlesCount) {
-        if (particlesGridIndex[threadNumber - 1] != particlesGridIndex[threadNumber]) {
-            gridStartIndices[particlesGridIndex[threadNumber]] = threadNumber;
-        }
-    }
-    __syncthreads();
 
     // Calculate potential
     const float x = pixelsX[threadNumber];
